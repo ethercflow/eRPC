@@ -140,7 +140,7 @@ void Nexus::unregister_hook(Hook *hook) {
   reg_hooks_lock_.unlock();
 }
 
-int Nexus::register_req_func(uint8_t req_type, erpc_req_func_t req_func,
+int Nexus::register_req_func(uint8_t req_type, void *req_func,
                              ReqFuncType req_func_type) {
   char issue_msg[kMaxIssueMsgLen];  // The basic issue message
   sprintf(issue_msg,
@@ -170,7 +170,7 @@ int Nexus::register_req_func(uint8_t req_type, erpc_req_func_t req_func,
     return -EPERM;
   }
 
-  arr_req_func = ReqFunc(req_func, req_func_type);
+  arr_req_func = ReqFunc(reinterpret_cast<erpc_req_func_t>(req_func), req_func_type);
   return 0;
 }
 }  // namespace erpc

@@ -3,16 +3,15 @@
  * @brief Rpc session functions that are exposed to the user.
  */
 #include <algorithm>
-#include "util/autorun_helpers.h"
 
 #include "rpc.h"
+#include "util/autorun_helpers.h"
 
 namespace erpc {
 
 // This function is not on the critical path and is exposed to the user,
 // so the args checking is always enabled.
-template <class TTr>
-int Rpc<TTr>::create_session_st(std::string remote_uri, uint8_t rem_rpc_id) {
+int Rpc::create_session_st(std::string remote_uri, uint8_t rem_rpc_id) {
   char issue_msg[kMaxIssueMsgLen];  // The basic issue message
   sprintf(issue_msg, "Rpc %u: create_session() failed. Issue", rpc_id_);
 
@@ -77,8 +76,7 @@ int Rpc<TTr>::create_session_st(std::string remote_uri, uint8_t rem_rpc_id) {
   return client_endpoint.session_num_;
 }
 
-template <class TTr>
-int Rpc<TTr>::destroy_session_st(int session_num) {
+int Rpc::destroy_session_st(int session_num) {
   char issue_msg[kMaxIssueMsgLen];  // The basic issue message
   sprintf(issue_msg, "Rpc %u, lsn %u: destroy_session() failed. Issue", rpc_id_,
           session_num);
@@ -147,8 +145,7 @@ int Rpc<TTr>::destroy_session_st(int session_num) {
   }
 }
 
-template <class TTr>
-size_t Rpc<TTr>::num_active_sessions_st() {
+size_t Rpc::num_active_sessions_st() {
   assert(in_dispatch());
 
   size_t ret = 0;

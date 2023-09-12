@@ -12,6 +12,7 @@
 
 #include <iomanip>
 #include <queue>
+#include <vector>
 #include "cc/timely.h"
 #include "common.h"
 #include "sm_types.h"
@@ -157,6 +158,10 @@ class TimingWheel {
     if (kWheelRecord) record_vec_.emplace_back(ent.pkt_num_, desired_tx_tsc);
 
     insert_into_wslot(dst_wslot, ent);
+  }
+
+  inline std::vector<wheel_record_t>& get_record_vec() {
+    return record_vec_;
   }
 
  private:

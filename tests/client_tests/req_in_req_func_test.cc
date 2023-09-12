@@ -94,9 +94,9 @@ void req_handler_cp(ReqHandle *req_handle_cp, void *_c) {
 
   // Backup is server thread #1
   c->rpc_->enqueue_request(c->session_num_arr_[1], kTestReqTypePB,
-                          &srv_req_info->req_msgbuf_pb_,
-                          &srv_req_info->resp_msgbuf_pb_, primary_cont_func,
-                          reinterpret_cast<void *>(srv_req_info));
+                           &srv_req_info->req_msgbuf_pb_,
+                           &srv_req_info->resp_msgbuf_pb_, reinterpret_cast<void *>(primary_cont_func),
+                           reinterpret_cast<void *>(srv_req_info));
 }
 
 /// The backups' request handler for primary-to-backup to requests. Echoes the
@@ -150,7 +150,8 @@ void primary_cont_func(void *_c, void *_tag) {
   }
 
   // eRPC will free dyn_resp_msgbuf
-  req_handle_cp->dyn_resp_msgbuf_ = c->rpc_->alloc_msg_buffer_or_die(req_size_cp);
+  req_handle_cp->dyn_resp_msgbuf_ =
+      c->rpc_->alloc_msg_buffer_or_die(req_size_cp);
 
   // Response to client = server-to-server response + 1
   for (size_t i = 0; i < req_size_cp; i++) {
@@ -189,9 +190,9 @@ void client_request_helper(AppContext *c, size_t msgbuf_i) {
   test_printf("Client [Rpc %u]: Sending request %zu of size %zu\n",
               c->rpc_->get_rpc_id(), c->num_reqs_sent_, req_size);
 
-  c->rpc_->enqueue_request(c->session_num_arr_[0], kTestReqTypeCP,
-                          &c->req_msgbufs_[msgbuf_i], &c->resp_msgbufs_[msgbuf_i],
-                          client_cont_func, tag.tag_);
+  c->rpc_->enqueue_request(
+      c->session_num_arr_[0], kTestReqTypeCP, &c->req_msgbufs_[msgbuf_i],
+      &c->resp_msgbufs_[msgbuf_i], reinterpret_cast<void *>(client_cont_func), tag.tag_);
 
   c->num_reqs_sent_++;
 }
@@ -208,7 +209,8 @@ void client_cont_func(void *_c, void *_tag) {
   const MsgBuffer &resp_msgbuf = c->resp_msgbufs_[msgbuf_i];
 
   test_printf("Client [Rpc %u]: Received response for req %u, length = %zu.\n",
-              c->rpc_->get_rpc_id(), tag.s_.req_i_, resp_msgbuf.get_data_size());
+              c->rpc_->get_rpc_id(), tag.s_.req_i_,
+              resp_msgbuf.get_data_size());
 
   // Check the response
   ASSERT_EQ(resp_msgbuf.get_data_size(), req_size);
@@ -228,7 +230,7 @@ void client_thread(Nexus *nexus, size_t num_sessions) {
   AppContext c;
   client_connect_sessions(nexus, c, num_sessions, basic_sm_handler);
 
-  Rpc<CTransport> *rpc = c.rpc_;
+  Rpc *rpc = c.rpc_;
 
   // Start by filling the request window
   c.req_msgbufs_.resize(erpc::kSessionReqWindow);

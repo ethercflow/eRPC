@@ -2,8 +2,7 @@
 
 namespace erpc {
 
-template <class TTr>
-void Rpc<TTr>::process_credit_stall_queue_st() {
+void Rpc::process_credit_stall_queue_st() {
   assert(in_dispatch());
   size_t write_index = 0;  // Re-add incomplete sslots at this index
 
@@ -19,8 +18,7 @@ void Rpc<TTr>::process_credit_stall_queue_st() {
   stallq_.resize(write_index);  // Number of sslots left = write_index
 }
 
-template <class TTr>
-void Rpc<TTr>::process_wheel_st() {
+void Rpc::process_wheel_st() {
   assert(in_dispatch());
   size_t cur_tsc = dpath_rdtsc();
   wheel_->reap(cur_tsc);
@@ -52,8 +50,7 @@ void Rpc<TTr>::process_wheel_st() {
   }
 }
 
-template <class TTr>
-void Rpc<TTr>::process_bg_queues_enqueue_request_st() {
+void Rpc::process_bg_queues_enqueue_request_st() {
   assert(in_dispatch());
   auto &queue = bg_queues_.enqueue_request_;
   const size_t cmds_to_process = queue.size_;  // Reduce cache line traffic
@@ -61,13 +58,12 @@ void Rpc<TTr>::process_bg_queues_enqueue_request_st() {
   for (size_t i = 0; i < cmds_to_process; i++) {
     enq_req_args_t args = queue.unlocked_pop();
     enqueue_request(args.session_num_, args.req_type_, args.req_msgbuf_,
-                    args.resp_msgbuf_, args.cont_func_, args.tag_,
+                    args.resp_msgbuf_, reinterpret_cast<void*>(args.cont_func_), args.tag_,
                     args.cont_etid_);
   }
 }
 
-template <class TTr>
-void Rpc<TTr>::process_bg_queues_enqueue_response_st() {
+void Rpc::process_bg_queues_enqueue_response_st() {
   assert(in_dispatch());
   auto &queue = bg_queues_.enqueue_response_;
   const size_t cmds_to_process = queue.size_;  // Reduce cache line traffic

@@ -100,7 +100,7 @@ void generic_test_func(Nexus *nexus, size_t) {
   AppContext c;
   client_connect_sessions(nexus, c, config_num_sessions, basic_sm_handler);
 
-  Rpc<CTransport> *rpc = c.rpc_;
+  Rpc *rpc = c.rpc_;
   int *session_num_arr = c.session_num_arr_;
 
   // Pre-create MsgBuffers so we can test reuse and resizing
@@ -139,7 +139,7 @@ void generic_test_func(Nexus *nexus, size_t) {
 
         rpc->enqueue_request(session_num_arr[sess_i], kTestReqType,
                              &cur_req_msgbuf, &c.resp_msgbufs_[iter_req_i],
-                             cont_func, reinterpret_cast<void *>(iter_req_i));
+                             reinterpret_cast<void *>(cont_func), reinterpret_cast<void *>(iter_req_i));
 
         iter_req_i++;
       }

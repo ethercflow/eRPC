@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+
 #include "common.h"
 #include "heartbeat_mgr.h"
 #include "session.h"
@@ -12,14 +13,13 @@
 namespace erpc {
 
 // Forward declaration for friendship
-template <typename T>
 class Rpc;
 
 /**
  * @brief A per-process library object used for initializing eRPC
  */
 class Nexus {
-  friend class Rpc<CTransport>;
+  friend class Rpc;
 
   /**
    * @brief Initialize eRPC for this process
@@ -56,7 +56,7 @@ class Nexus {
    *
    * @return 0 on success, negative errno on failure.
    */
-  int register_req_func(uint8_t req_type, erpc_req_func_t req_func,
+  int register_req_func(uint8_t req_type, void *req_func,
                         ReqFuncType req_func_type = ReqFuncType::kForeground);
 
  private:

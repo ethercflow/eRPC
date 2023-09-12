@@ -86,6 +86,9 @@ class Timely {
     return (2 * g + 0.5);
   }
 
+  /// @brief Perform a rate update
+  inline void set_rate(double rate) { rate_ = rate; }
+
   /**
    * @brief Perform a rate update
    *

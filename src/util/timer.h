@@ -13,12 +13,7 @@
 namespace erpc {
 
 /// Return the TSC
-static inline size_t rdtsc() {
-  uint64_t rax;
-  uint64_t rdx;
-  asm volatile("rdtsc" : "=a"(rax), "=d"(rdx));
-  return static_cast<size_t>((rdx << 32) | rax);
-}
+size_t rdtsc();
 
 /// An alias for rdtsc() to distinguish calls on the critical path
 static const auto &dpath_rdtsc = rdtsc;
@@ -87,9 +82,7 @@ static double to_msec(size_t cycles, double freq_ghz) {
 }
 
 /// Convert cycles measured by rdtsc with frequence \p freq_ghz to usec
-static double to_usec(size_t cycles, double freq_ghz) {
-  return (cycles / (freq_ghz * 1000));
-}
+double to_usec(size_t cycles, double freq_ghz);
 
 static size_t ms_to_cycles(double ms, double freq_ghz) {
   return static_cast<size_t>(ms * 1000 * 1000 * freq_ghz);

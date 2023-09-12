@@ -6,8 +6,7 @@
 
 namespace erpc {
 
-template <class TTr>
-void Rpc<TTr>::handle_sm_rx_st() {
+void Rpc::handle_sm_rx_st() {
   assert(in_dispatch());
   MtQueue<SmWorkItem> &queue = nexus_hook_.sm_rx_queue_;
 
@@ -38,8 +37,7 @@ void Rpc<TTr>::handle_sm_rx_st() {
   }
 }
 
-template <class TTr>
-void Rpc<TTr>::bury_session_st(Session *session) {
+void Rpc::bury_session_st(Session *session) {
   assert(in_dispatch());
 
   // Free session resources
@@ -57,8 +55,7 @@ void Rpc<TTr>::bury_session_st(Session *session) {
   delete session;  // This does nothing except free the session memory
 }
 
-template <class TTr>
-void Rpc<TTr>::sm_pkt_udp_tx_st(const SmPkt &sm_pkt) {
+void Rpc::sm_pkt_udp_tx_st(const SmPkt &sm_pkt) {
   ERPC_INFO("Rpc %u: Sending packet %s.\n", rpc_id_,
             sm_pkt.to_string().c_str());
   const std::string rem_hostname =
@@ -70,8 +67,7 @@ void Rpc<TTr>::sm_pkt_udp_tx_st(const SmPkt &sm_pkt) {
   udp_client_.send(rem_hostname, rem_sm_udp_port, sm_pkt);
 }
 
-template <class TTr>
-void Rpc<TTr>::send_sm_req_st(Session *session) {
+void Rpc::send_sm_req_st(Session *session) {
   assert(in_dispatch());
 
   sm_pending_reqs_.insert(session->local_session_num_);  // Duplicates are fine

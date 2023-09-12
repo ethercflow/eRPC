@@ -19,10 +19,10 @@ void cont_func(void *_c, void *) {
 void process_proxy_thread_func(size_t process_id, size_t num_processes) {
   auto uri = "127.0.0.1:" + std::to_string(kBaseSmUdpPort + process_id);
   Nexus nexus(uri, 0, 0);
-  nexus.register_req_func(kTestReqType, req_handler);
+  nexus.register_req_func(kTestReqType, reinterpret_cast<void*>(req_handler));
 
   BasicAppContext c;
-  Rpc<CTransport> rpc(&nexus, &c, 0, basic_sm_handler);
+  Rpc rpc(&nexus, &c, 0, reinterpret_cast<void *>(basic_sm_handler));
   c.rpc_ = &rpc;
 
   // Barrier
@@ -52,8 +52,8 @@ void process_proxy_thread_func(size_t process_id, size_t num_processes) {
     if (i == process_id) continue;
 
     c.rpc_->enqueue_request(c.session_num_arr_[i], kTestReqType,
-                           &c.req_msgbufs_[i], &c.resp_msgbufs_[i], cont_func,
-                           nullptr);
+                            &c.req_msgbufs_[i], &c.resp_msgbufs_[i], reinterpret_cast<void *>(cont_func),
+                            nullptr);
   }
 
   wait_for_rpc_resps_or_timeout(c, num_processes - 1);

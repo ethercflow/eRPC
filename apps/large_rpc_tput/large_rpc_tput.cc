@@ -14,8 +14,11 @@
  */
 
 #include "large_rpc_tput.h"
+
 #include <signal.h>
+
 #include <cstring>
+
 #include "profile_incast.h"
 #include "profile_victim.h"
 #include "util/autorun_helpers.h"
@@ -126,9 +129,8 @@ void thread_func(size_t thread_id, app_stats_t *app_stats, erpc::Nexus *nexus) {
   erpc::rt_assert(port_vec.size() > 0);
   uint8_t phy_port = port_vec.at(thread_id % port_vec.size());
 
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c),
-                                  static_cast<uint8_t>(thread_id),
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), static_cast<uint8_t>(thread_id),
+                basic_sm_handler, phy_port);
   rpc.retry_connect_on_invalid_rpc_id_ = true;
   if (erpc::kTesting) rpc.fault_inject_set_pkt_drop_prob_st(FLAGS_drop_prob);
 

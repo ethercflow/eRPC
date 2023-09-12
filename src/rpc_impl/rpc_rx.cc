@@ -2,8 +2,7 @@
 
 namespace erpc {
 
-template <class TTr>
-void Rpc<TTr>::process_comps_st() {
+void Rpc::process_comps_st() {
   assert(in_dispatch());
   const size_t num_pkts = transport_->rx_burst();
   if (num_pkts == 0) return;
@@ -64,7 +63,7 @@ void Rpc<TTr>::process_comps_st() {
 
     switch (pkthdr->pkt_type_) {
       case PktType::kReq:
-        pkthdr->msg_size_ <= TTr::kMaxDataPerPkt
+        pkthdr->msg_size_ <= DpdkTransport::kMaxDataPerPkt
             ? process_small_req_st(sslot, pkthdr)
             : process_large_req_one_st(sslot, pkthdr);
         break;
@@ -90,8 +89,7 @@ void Rpc<TTr>::process_comps_st() {
   transport_->post_recvs(num_pkts);
 }
 
-template <class TTr>
-void Rpc<TTr>::submit_bg_req_st(SSlot *sslot) {
+void Rpc::submit_bg_req_st(SSlot *sslot) {
   assert(in_dispatch());
   assert(nexus_->num_bg_threads_ > 0);
 
@@ -101,9 +99,8 @@ void Rpc<TTr>::submit_bg_req_st(SSlot *sslot) {
   req_queue->unlocked_push(Nexus::BgWorkItem::make_req_item(context_, sslot));
 }
 
-template <class TTr>
-void Rpc<TTr>::submit_bg_resp_st(erpc_cont_func_t cont_func, void *tag,
-                                 size_t bg_etid) {
+void Rpc::submit_bg_resp_st(erpc_cont_func_t cont_func, void *tag,
+                            size_t bg_etid) {
   assert(in_dispatch());
   assert(nexus_->num_bg_threads_ > 0);
   assert(bg_etid < nexus_->num_bg_threads_);

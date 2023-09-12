@@ -1,7 +1,9 @@
 #include <gflags/gflags.h>
 #include <signal.h>
+
 #include <cstring>
 #include <pcg/pcg_random.hpp>
+
 #include "../apps_common.h"
 #include "pmica.h"
 #include "rpc.h"
@@ -287,8 +289,8 @@ void server_func(erpc::Nexus *nexus, size_t thread_id) {
   printf("thread %zu: populate() inserted %zu keys. occupancy = %.2f\n",
          thread_id, c.max_key, c.max_key * 1.0 / c.hashmap->get_key_capacity());
 
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), thread_id,
-                                  basic_sm_handler, port_vec.at(0));
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), thread_id, basic_sm_handler,
+                port_vec.at(0));
   c.rpc = &rpc;
   const double freq_ghz = c.rpc->get_freq_ghz();
   const size_t tsc_per_sec = erpc::ms_to_cycles(1000, freq_ghz);
@@ -443,8 +445,8 @@ void client_func(erpc::Nexus *nexus, size_t thread_id) {
   uint8_t phy_port = port_vec.at(0);
 
   ClientContext c;
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), thread_id,
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), thread_id, basic_sm_handler,
+                phy_port);
   if (FLAGS_workload == "set") c.workload = Workload::kSets;
   if (FLAGS_workload == "get") c.workload = Workload::kGets;
   if (FLAGS_workload == "5050") c.workload = Workload::k5050;

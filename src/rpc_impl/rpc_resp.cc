@@ -7,8 +7,7 @@ namespace erpc {
 // which point the event loop buries the request MsgBuffer.
 //
 // So sslot->rx_msgbuf may or may not be valid at this point.
-template <class TTr>
-void Rpc<TTr>::enqueue_response(ReqHandle *req_handle, MsgBuffer *resp_msgbuf) {
+void Rpc::enqueue_response(ReqHandle *req_handle, MsgBuffer *resp_msgbuf) {
   // When called from a background thread, enqueue to the foreground thread
   if (unlikely(!in_dispatch())) {
     bg_queues_.enqueue_response_.unlocked_push(
@@ -69,9 +68,8 @@ void Rpc<TTr>::enqueue_response(ReqHandle *req_handle, MsgBuffer *resp_msgbuf) {
   enqueue_pkt_tx_burst_st(sslot, 0, nullptr);  // 0 = packet index, not pkt_num
 }
 
-template <class TTr>
-void Rpc<TTr>::process_resp_one_st(SSlot *sslot, const pkthdr_t *pkthdr,
-                                   size_t rx_tsc) {
+void Rpc::process_resp_one_st(SSlot *sslot, const pkthdr_t *pkthdr,
+                              size_t rx_tsc) {
   assert(in_dispatch());
   assert(pkthdr->req_num_ <= sslot->cur_req_num_);
 
@@ -96,7 +94,7 @@ void Rpc<TTr>::process_resp_one_st(SSlot *sslot, const pkthdr_t *pkthdr,
   ci.progress_tsc_ = ev_loop_tsc_;
 
   // Special handling for single-packet responses
-  if (likely(pkthdr->msg_size_ <= TTr::kMaxDataPerPkt)) {
+  if (likely(pkthdr->msg_size_ <= DpdkTransport::kMaxDataPerPkt)) {
     resize_msg_buffer(resp_msgbuf, pkthdr->msg_size_);
 
     // Copy eRPC header and data (but not Transport headroom). The eRPC header
@@ -156,7 +154,7 @@ void Rpc<TTr>::process_resp_one_st(SSlot *sslot, const pkthdr_t *pkthdr,
     assert(session->client_info_.sslot_free_vec_.size() == 1);
     enq_req_args_t &args = session->client_info_.enq_req_backlog_.front();
     enqueue_request(args.session_num_, args.req_type_, args.req_msgbuf_,
-                    args.resp_msgbuf_, args.cont_func_, args.tag_,
+                    args.resp_msgbuf_, reinterpret_cast<void*>(args.cont_func_), args.tag_,
                     args.cont_etid_);
     session->client_info_.enq_req_backlog_.pop();
   }

@@ -1,7 +1,10 @@
 #include "log.h"
+
 #include <gflags/gflags.h>
 #include <libpmem.h>
+
 #include <cstring>
+
 #include "../apps_common.h"
 #include "rpc.h"
 #include "util/autorun_helpers.h"
@@ -74,8 +77,7 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
     c->log.append_naive(req_msgbuf->buf, req_msgbuf->get_data_size());
   }
 
-  erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf,
-                                                 sizeof(size_t));
+  erpc::Rpc::resize_msg_buffer(&req_handle->pre_resp_msgbuf, sizeof(size_t));
   c->rpc->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf);
   c->num_reqs_completed++;
 }
@@ -86,8 +88,8 @@ void server_func(size_t thread_id, erpc::Nexus *nexus, uint8_t *pbuf) {
   uint8_t phy_port = port_vec.at(0);
 
   ServerContext c;
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), thread_id,
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), thread_id, basic_sm_handler,
+                phy_port);
 
   c.rpc = &rpc;
   c.thread_id = thread_id;
@@ -117,8 +119,7 @@ void server_func(size_t thread_id, erpc::Nexus *nexus, uint8_t *pbuf) {
 // Send a request using this MsgBuffer
 void send_req(ClientContext *c, size_t msgbuf_idx) {
   erpc::MsgBuffer &req_msgbuf = c->req_msgbuf[msgbuf_idx];
-  erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_msgbuf,
-                                                 c->cur_log_entry_size);
+  erpc::Rpc::resize_msg_buffer(&req_msgbuf, c->cur_log_entry_size);
 
   if (kAppVerbose) {
     printf("log: Thread %zu sending request using msgbuf_idx %zu.\n",
@@ -171,9 +172,8 @@ void client_func(size_t thread_id, erpc::Nexus *nexus) {
   erpc::rt_assert(port_vec.size() > 0);
   uint8_t phy_port = port_vec.at(thread_id % port_vec.size());
 
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c),
-                                  static_cast<uint8_t>(thread_id),
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), static_cast<uint8_t>(thread_id),
+                basic_sm_handler, phy_port);
   rpc.retry_connect_on_invalid_rpc_id = true;
   c.rpc = &rpc;
   c.cur_log_entry_size = FLAGS_min_log_entry_size;

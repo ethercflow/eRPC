@@ -12,6 +12,16 @@ class ReqHandle : public SSlot {
     return &server_info_.req_msgbuf_;
   }
 
+  /// Get the preallocated msgbuf for single-packet responses
+  inline MsgBuffer get_pre_resp_msgbuf() const {
+    return pre_resp_msgbuf_;
+  }
+
+  /// A non-preallocated msgbuf for possibly multi-packet responses
+  inline MsgBuffer get_dyn_resp_msgbuf() const {
+    return dyn_resp_msgbuf_;
+  }
+
   /// Get the RPC ID of the server-side RPC object that received this request
   /// from the network. Valid until the request handler enqueues a response.
   inline uint8_t get_server_rpc_id() const {

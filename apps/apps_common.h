@@ -5,7 +5,9 @@
 #pragma once
 
 #include <gflags/gflags.h>
+
 #include <set>
+
 #include "rpc.h"
 #include "util/latency.h"
 
@@ -126,7 +128,7 @@ class TmpStat {
 class BasicAppContext {
  public:
   TmpStat *tmp_stat_ = nullptr;
-  erpc::Rpc<erpc::CTransport> *rpc_ = nullptr;
+  erpc::Rpc *rpc_ = nullptr;
   erpc::FastRand fastrand_;
 
   std::vector<int> session_num_vec_;
@@ -223,7 +225,7 @@ void ping_all_blocking(BasicAppContext &c) {
 
     c.ping_pending_ = true;
     c.rpc_->enqueue_request(session_num, kPingReqHandlerType, &ping_req,
-                            &ping_resp, ping_cont_func, nullptr);
+                            &ping_resp, reinterpret_cast<void*>(ping_cont_func), nullptr);
 
     size_t ms_elapsed = 0;
     while (c.ping_pending_) {

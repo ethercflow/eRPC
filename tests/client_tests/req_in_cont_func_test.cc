@@ -69,8 +69,9 @@ void enqueue_request_helper(AppContext *c, size_t msgbuf_i) {
               req_size);
 
   c->rpc_->enqueue_request(c->session_num_arr_[0], kTestReqType,
-                          &c->req_msgbufs_[msgbuf_i], &c->resp_msgbufs_[msgbuf_i],
-                          cont_func, reinterpret_cast<void *>(tag.tag_));
+                           &c->req_msgbufs_[msgbuf_i],
+                           &c->resp_msgbufs_[msgbuf_i], reinterpret_cast<void*>(cont_func),
+                           reinterpret_cast<void *>(tag.tag_));
 
   c->num_reqs_sent_++;
 }
@@ -97,7 +98,7 @@ void client_thread(Nexus *nexus, size_t num_sessions) {
   AppContext c;
   client_connect_sessions(nexus, c, num_sessions, basic_sm_handler);
 
-  Rpc<CTransport> *rpc = c.rpc_;
+  Rpc *rpc = c.rpc_;
 
   // Start by filling the request window
   c.req_msgbufs_.resize(kSessionReqWindow);

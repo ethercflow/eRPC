@@ -59,8 +59,7 @@ class ClientContext : public BasicAppContext {
 
 void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   auto *c = static_cast<ServerContext *>(_context);
-  erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
-                                                 FLAGS_resp_size);
+  erpc::Rpc::resize_msg_buffer(&req_handle->pre_resp_msgbuf_, FLAGS_resp_size);
   c->rpc_->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf_);
 }
 
@@ -70,8 +69,8 @@ void server_func(erpc::Nexus *nexus) {
   uint8_t phy_port = port_vec.at(0);
 
   ServerContext c;
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), 0 /* tid */,
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), 0 /* tid */, reinterpret_cast<void *>(basic_sm_handler),
+                phy_port);
   rpc.set_pre_resp_msgbuf_size(FLAGS_resp_size);
   c.rpc_ = &rpc;
 
@@ -113,7 +112,7 @@ inline void send_req(ClientContext &c) {
   c.start_tsc_ = erpc::rdtsc();
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
-                          &c.req_msgbuf_, &c.resp_msgbuf_, app_cont_func,
+                          &c.req_msgbuf_, &c.resp_msgbuf_, reinterpret_cast<void*>(app_cont_func),
                           nullptr);
   if (kAppVerbose) {
     printf("Latency: Sending request of size %zu bytes to server #%zu\n",
@@ -146,8 +145,7 @@ void client_func(erpc::Nexus *nexus) {
   uint8_t phy_port = port_vec.at(0);
 
   ClientContext c;
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), 0,
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), 0, reinterpret_cast<void *>(basic_sm_handler), phy_port);
 
   rpc.retry_connect_on_invalid_rpc_id_ = true;
   c.rpc_ = &rpc;
@@ -215,7 +213,7 @@ int main(int argc, char **argv) {
 
   erpc::Nexus nexus(erpc::get_uri_for_process(FLAGS_process_id),
                     FLAGS_numa_node, 0);
-  nexus.register_req_func(kAppReqType, req_handler);
+  nexus.register_req_func(kAppReqType, reinterpret_cast<void*>(req_handler));
 
   auto t = std::thread(
       FLAGS_process_id < FLAGS_num_server_processes ? server_func : client_func,

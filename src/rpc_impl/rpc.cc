@@ -2,21 +2,22 @@
  * @file rpc.cc
  * @brief Simple Rpc-related methods.
  */
+#include "rpc.h"
+
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
 
-#include "rpc.h"
+#include "config.h"
 
 namespace erpc {
 
-template <class TTr>
-Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
-              sm_handler_t sm_handler, uint8_t phy_port)
+Rpc::Rpc(Nexus *nexus, void *context, uint8_t rpc_id, void *sm_handler,
+         uint8_t phy_port)
     : nexus_(nexus),
       context_(context),
       rpc_id_(rpc_id),
-      sm_handler_(sm_handler),
+      sm_handler_(reinterpret_cast<sm_handler_t>(sm_handler)),
       phy_port_(phy_port),
       numa_node_(nexus->numa_node_),
       creation_tsc_(rdtsc()),
@@ -51,8 +52,8 @@ Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
   // Partially initialize the transport without using hugepages. This
   // initializes the transport's memory registration functions required for
   // the hugepage allocator.
-  transport_ =
-      new TTr(nexus->sm_udp_port_, rpc_id, phy_port, numa_node_, trace_file_);
+  transport_ = new DpdkTransport(nexus->sm_udp_port_, rpc_id, phy_port,
+                                 numa_node_, trace_file_);
 
   huge_alloc_ =
       new HugeAlloc(kInitialHugeAllocSize, numa_node_, transport_->reg_mr_func_,
@@ -97,8 +98,7 @@ Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
   if (kCcPacing) wheel_->catchup();  // Wheel could be lagging, so catch up
 }
 
-template <class TTr>
-Rpc<TTr>::~Rpc() {
+Rpc::~Rpc() {
   assert(in_dispatch());
 
   // XXX: Check if all sessions are disconnected

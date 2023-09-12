@@ -10,7 +10,6 @@ namespace erpc {
 // Forward declarations for friendship
 class Session;
 
-template <typename T>
 class Rpc;
 
 /**
@@ -27,7 +26,7 @@ class Rpc;
  */
 class MsgBuffer {
   friend class CTransport;
-  friend class Rpc<CTransport>;
+  friend class Rpc;
   friend class Session;
 
  private:
@@ -134,6 +133,10 @@ class MsgBuffer {
    * smaller than it's maximum data capacity due to resizing.
    */
   inline size_t get_data_size() const { return data_size_; }
+
+  /// Return the pointer to the first application data byte. The message buffer is invalid
+  /// invalid if this is null.
+  inline uint8_t *get_inner_buf() const { return buf_; }
 
  private:
   /// The optional backing hugepage buffer. buffer.buf points to the zeroth

@@ -50,12 +50,11 @@ struct enq_resp_args_t {
 };
 
 // Forward declaration for friendship
-template <typename T>
 class Rpc;
 
 /// A one-to-one session class for all transports
 class Session {
-  friend class Rpc<CTransport>;
+  friend class Rpc;
   friend class ReqHandle;
 
  public:

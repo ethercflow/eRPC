@@ -2,14 +2,14 @@
  * @file rpc_connect_handlers.cc
  * @brief Handlers for session management connect requests and responses.
  */
+#include "config.h"
 #include "rpc.h"
 
 namespace erpc {
 
 // We need to handle all types of errors in remote arguments that the client can
 // make when calling create_session(), which cannot check for such errors.
-template <class TTr>
-void Rpc<TTr>::handle_connect_req_st(const SmPkt &sm_pkt) {
+void Rpc::handle_connect_req_st(const SmPkt &sm_pkt) {
   assert(in_dispatch());
   assert(sm_pkt.pkt_type_ == SmPktType::kConnectReq &&
          sm_pkt.server_.rpc_id_ == rpc_id_);
@@ -66,7 +66,8 @@ void Rpc<TTr>::handle_connect_req_st(const SmPkt &sm_pkt) {
   }
 
   if (!resolve_success) {
-    std::string routing_info_str = TTr::routing_info_str(&client_rinfo);
+    std::string routing_info_str =
+        DpdkTransport::routing_info_str(&client_rinfo);
     ERPC_WARN("%s: Unable to resolve routing info %s. Sending response.\n",
               issue_msg, routing_info_str.c_str());
     sm_pkt_udp_tx_st(
@@ -123,8 +124,7 @@ void Rpc<TTr>::handle_connect_req_st(const SmPkt &sm_pkt) {
   return;
 }
 
-template <class TTr>
-void Rpc<TTr>::handle_connect_resp_st(const SmPkt &sm_pkt) {
+void Rpc::handle_connect_resp_st(const SmPkt &sm_pkt) {
   assert(in_dispatch());
   assert(sm_pkt.pkt_type_ == SmPktType::kConnectResp &&
          sm_pkt.client_.rpc_id_ == rpc_id_);

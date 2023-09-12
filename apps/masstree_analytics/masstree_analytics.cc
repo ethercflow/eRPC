@@ -1,6 +1,9 @@
 #include "masstree_analytics.h"
+
 #include <signal.h>
+
 #include <cstring>
+
 #include "mica/util/cityhash/city.h"
 #include "util/autorun_helpers.h"
 
@@ -28,8 +31,8 @@ void point_req_handler(erpc::ReqHandle *req_handle, void *_context) {
   assert(etid >= FLAGS_num_server_bg_threads &&
          etid < FLAGS_num_server_bg_threads + FLAGS_num_server_fg_threads);
 
-  erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
-                                                 sizeof(wire_resp_t));
+  erpc::Rpc::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
+                               sizeof(wire_resp_t));
 
   if (kBypassMasstree) {
     // Send a garbage response
@@ -90,8 +93,8 @@ void range_req_handler(erpc::ReqHandle *req_handle, void *_context) {
 
   const size_t count = mti->sum_in_range(key_copy, req->range_req.range, ti);
 
-  erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
-                                                 sizeof(wire_resp_t));
+  erpc::Rpc::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
+                               sizeof(wire_resp_t));
   auto *resp =
       reinterpret_cast<wire_resp_t *>(req_handle->pre_resp_msgbuf_.buf_);
   resp->resp_type = RespType::kFound;
@@ -225,9 +228,8 @@ void client_thread_func(size_t thread_id, app_stats_t *app_stats,
   erpc::rt_assert(port_vec.size() > 0);
   const uint8_t phy_port = port_vec.at(thread_id % port_vec.size());
 
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c),
-                                  static_cast<uint8_t>(thread_id),
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), static_cast<uint8_t>(thread_id),
+                basic_sm_handler, phy_port);
   rpc.retry_connect_on_invalid_rpc_id_ = true;
   c.rpc_ = &rpc;
 
@@ -272,9 +274,8 @@ void server_thread_func(size_t thread_id, erpc::Nexus *nexus, MtIndex *mti,
   erpc::rt_assert(port_vec.size() > 0);
   uint8_t phy_port = port_vec.at(thread_id % port_vec.size());
 
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c),
-                                  static_cast<uint8_t>(thread_id),
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), static_cast<uint8_t>(thread_id),
+                basic_sm_handler, phy_port);
   c.rpc_ = &rpc;
   while (ctrl_c_pressed == 0) rpc.run_event_loop(200);
 }

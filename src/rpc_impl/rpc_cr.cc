@@ -2,13 +2,13 @@
 
 namespace erpc {
 
-template <class TTr>
-void Rpc<TTr>::enqueue_cr_st(SSlot *sslot, const pkthdr_t *req_pkthdr) {
+void Rpc::enqueue_cr_st(SSlot *sslot, const pkthdr_t *req_pkthdr) {
   assert(in_dispatch());
 
   MsgBuffer *ctrl_msgbuf = &ctrl_msgbufs_[ctrl_msgbuf_head_];
   ctrl_msgbuf_head_++;
-  if (ctrl_msgbuf_head_ == 2 * TTr::kUnsigBatch) ctrl_msgbuf_head_ = 0;
+  if (ctrl_msgbuf_head_ == 2 * DpdkTransport::kUnsigBatch)
+    ctrl_msgbuf_head_ = 0;
 
   // Fill in the CR packet header. Avoid copying req_pkthdr's headroom.
   pkthdr_t *cr_pkthdr = ctrl_msgbuf->get_pkthdr_0();
@@ -23,9 +23,8 @@ void Rpc<TTr>::enqueue_cr_st(SSlot *sslot, const pkthdr_t *req_pkthdr) {
   enqueue_hdr_tx_burst_st(sslot, ctrl_msgbuf, nullptr);
 }
 
-template <class TTr>
-void Rpc<TTr>::process_expl_cr_st(SSlot *sslot, const pkthdr_t *pkthdr,
-                                  size_t rx_tsc) {
+void Rpc::process_expl_cr_st(SSlot *sslot, const pkthdr_t *pkthdr,
+                             size_t rx_tsc) {
   assert(in_dispatch());
   assert(pkthdr->req_num_ <= sslot->cur_req_num_);
 

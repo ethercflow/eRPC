@@ -5,12 +5,15 @@
  */
 
 #include "pmem_bw.h"
+
 #include <libpmem.h>
 #include <rte_rawdev.h>
 // Newline to prevent reordering rte_ioat_rawdev.h before rte_rawdev.h
 #include <rte_ioat_rawdev.h>
 #include <signal.h>
+
 #include <cstring>
+
 #include "util/autorun_helpers.h"
 #include "util/pmem.h"
 
@@ -68,8 +71,7 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   } else {
     pmem_memcpy_persist(&c->pbuf[c->pmem.cur_offset], req_msgbuf->buf,
                         req_size);
-    erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf,
-                                                   FLAGS_resp_size);
+    erpc::Rpc::resize_msg_buffer(&req_handle->pre_resp_msgbuf, FLAGS_resp_size);
     c->rpc->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf);
   }
 
@@ -123,8 +125,8 @@ void server_func(size_t thread_id, erpc::Nexus *nexus, uint8_t *pbuf) {
   uint8_t phy_port = port_vec.at(0);
 
   ServerContext c;
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), thread_id,
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), thread_id, basic_sm_handler,
+                phy_port);
   erpc::rt_assert(FLAGS_resp_size <= rpc.get_max_data_per_pkt());
 
   c.rpc = &rpc;
@@ -183,8 +185,8 @@ void server_func(size_t thread_id, erpc::Nexus *nexus, uint8_t *pbuf) {
         }
       }
 
-      erpc::Rpc<erpc::CTransport>::resize_msg_buffer(
-          &req_handle->pre_resp_msgbuf, FLAGS_resp_size);
+      erpc::Rpc::resize_msg_buffer(&req_handle->pre_resp_msgbuf,
+                                   FLAGS_resp_size);
       c.rpc->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf);
     }
 
@@ -195,7 +197,7 @@ void server_func(size_t thread_id, erpc::Nexus *nexus, uint8_t *pbuf) {
 // Send a request using this MsgBuffer
 void send_req(ClientContext *c, size_t msgbuf_idx) {
   erpc::MsgBuffer &req_msgbuf = c->req_msgbuf[msgbuf_idx];
-  erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_msgbuf, c->cur_req_size);
+  erpc::Rpc::resize_msg_buffer(&req_msgbuf, c->cur_req_size);
 
   if (kAppVerbose) {
     printf("pmem_bw: Thread %zu sending request using msgbuf_idx %zu.\n",
@@ -260,9 +262,8 @@ void client_func(size_t thread_id, app_stats_t *app_stats, erpc::Nexus *nexus) {
   erpc::rt_assert(port_vec.size() > 0);
   uint8_t phy_port = port_vec.at(thread_id % port_vec.size());
 
-  erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c),
-                                  static_cast<uint8_t>(thread_id),
-                                  basic_sm_handler, phy_port);
+  erpc::Rpc rpc(nexus, static_cast<void *>(&c), static_cast<uint8_t>(thread_id),
+                basic_sm_handler, phy_port);
   rpc.retry_connect_on_invalid_rpc_id = true;
   c.rpc = &rpc;
 

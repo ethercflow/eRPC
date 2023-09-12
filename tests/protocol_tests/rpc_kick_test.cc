@@ -25,7 +25,7 @@ class RpcClientKickTest : public RpcTest {
 };
 
 /// Transmit all sslots in a wheel. Return number of packets transmitted.
-size_t wheel_tx_all(Rpc<CTransport> *rpc) {
+size_t wheel_tx_all(Rpc *rpc) {
   for (size_t i = 0; i < kWheelNumWslots; i++) rpc->wheel_->reap_wslot(i);
   size_t ret = rpc->wheel_->ready_queue_.size();
   rpc->process_wheel_st();
@@ -34,7 +34,7 @@ size_t wheel_tx_all(Rpc<CTransport> *rpc) {
 
 /// Kicking a sslot without credits is disallowed
 TEST_F(RpcClientKickTest, kick_st_no_credits) {
-  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, cont_func, kTestTag);
+  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, reinterpret_cast<void *>(cont_func), kTestTag);
   assert(clt_session_->client_info_.credits_ == 0);
   ASSERT_DEATH(rpc_->kick_req_st(sslot_0_), ".*");
 }
@@ -42,7 +42,7 @@ TEST_F(RpcClientKickTest, kick_st_no_credits) {
 /// Kicking a sslot that has transmitted all request packets but received no
 /// response packet is disallowed
 TEST_F(RpcClientKickTest, kick_st_all_request_no_response) {
-  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, cont_func, kTestTag);
+  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, reinterpret_cast<void *>(cont_func), kTestTag);
   assert(clt_session_->client_info_.credits_ == 0);
   sslot_0_->client_info_.num_tx_ = rpc_->data_size_to_num_pkts(req_.data_size_);
   sslot_0_->client_info_.num_rx_ =
@@ -52,7 +52,7 @@ TEST_F(RpcClientKickTest, kick_st_all_request_no_response) {
 
 /// Kicking a sslot that has received the full response is disallowed
 TEST_F(RpcClientKickTest, kick_st_full_response) {
-  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, cont_func, kTestTag);
+  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, reinterpret_cast<void *>(cont_func), kTestTag);
   assert(clt_session_->client_info_.credits_ == 0);
 
   *resp_.get_pkthdr_0() =
@@ -73,7 +73,7 @@ TEST_F(RpcClientKickTest, kick_st_req_pkts) {
   assert(kEnableCc == true);
 
   // enqueue_request() calls kick_st()
-  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, cont_func, kTestTag);
+  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, reinterpret_cast<void *>(cont_func), kTestTag);
   ASSERT_EQ(clt_session_->client_info_.credits_, 0);
   ASSERT_EQ(sslot_0_->client_info_.num_tx_, kSessionCredits);
 
@@ -100,7 +100,7 @@ TEST_F(RpcClientKickTest, kick_st_req_pkts) {
 
 /// Kick a sslot that has received the first response packet
 TEST_F(RpcClientKickTest, kick_st_rfr_pkts) {
-  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, cont_func, kTestTag);
+  rpc_->enqueue_request(0, kTestReqType, &req_, &resp_, reinterpret_cast<void *>(cont_func), kTestTag);
   assert(clt_session_->client_info_.credits_ == 0);
   pkthdr_tx_queue_->clear();
 

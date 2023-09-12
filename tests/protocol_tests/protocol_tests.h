@@ -42,12 +42,11 @@ class RpcTest : public ::testing::Test {
 
     nexus_ = new Nexus("127.0.0.1:31850", kTestNumaNode, 0);
     rt_assert(nexus_ != nullptr, "Failed to create nexus");
-    nexus_->register_req_func(kTestReqType, req_handler,
+    nexus_->register_req_func(kTestReqType, reinterpret_cast<void*>(req_handler),
                               ReqFuncType::kForeground);
     nexus_->kill_switch_ = true;  // Kill SM thread
 
-    rpc_ = new Rpc<CTransport>(nexus_, nullptr, kTestRpcId, sm_handler,
-                               kTestPhyPort);
+    rpc_ = new Rpc(nexus_, nullptr, kTestRpcId, reinterpret_cast<void*>(sm_handler), kTestPhyPort);
 
     rt_assert(rpc_ != nullptr, "Failed to create Rpc");
 
@@ -150,7 +149,7 @@ class RpcTest : public ::testing::Test {
     return se;
   }
 
-  Rpc<CTransport> *rpc_ = nullptr;
+  Rpc *rpc_ = nullptr;
   FixedQueue<pkthdr_t, kSessionCredits> *pkthdr_tx_queue_;
 
  private:

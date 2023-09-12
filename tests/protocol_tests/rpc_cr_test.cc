@@ -16,7 +16,7 @@ TEST_F(RpcTest, process_expl_cr_st) {
   rpc_->faults_.hard_wheel_bypass_ = true;  // Don't place request pkts in wheel
 
   // Use enqueue_request() to do sslot formatting. This uses all credits.
-  rpc_->enqueue_request(0, kTestReqType, &req, &resp, cont_func, kTestTag);
+  rpc_->enqueue_request(0, kTestReqType, &req, &resp, reinterpret_cast<void *>(cont_func), kTestTag);
   assert(sslot_0->client_info_.num_tx_ == kSessionCredits);
   assert(clt_session->client_info_.credits_ == 0);
   assert(pkthdr_tx_queue_->size() == kSessionCredits);
