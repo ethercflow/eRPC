@@ -188,7 +188,7 @@ class DpdkTransport : public Transport {
 
   // Transport-specific constants
   static constexpr TransportType kTransportType = TransportType::kDPDK;
-  static constexpr size_t kMTU = 1024;
+  static constexpr size_t kMTU = 8192;
 
   static constexpr size_t kNumTxRingDesc = 128;
   static constexpr size_t kPostlist = 32;
@@ -209,7 +209,7 @@ class DpdkTransport : public Transport {
   /// Per-element size for the packet buffer memory pool
   static constexpr size_t kMbufSize =
       (static_cast<uint32_t>(sizeof(struct rte_mbuf)) + RTE_PKTMBUF_HEADROOM +
-       2048 /* For Azure, kMTU = 1024 does not work here */);
+       kMTU /* For Azure, kMTU = 1024 does not work here */);
 
   /// Maximum data bytes (i.e., non-header) in a packet
   static constexpr size_t kMaxDataPerPkt = (kMTU - sizeof(pkthdr_t));
