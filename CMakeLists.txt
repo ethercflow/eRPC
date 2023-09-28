@@ -380,16 +380,16 @@ endif()
 # Compile the library
 add_library(erpc ${SOURCES})
 
-if(DPDK_NEEDED STREQUAL "true")
-  if (NOT WIN32)
-    # Build the eRPC DPDK management daemon for Linux only
-    add_executable(erpc_dpdk_daemon
-      src/transport_impl/dpdk/dpdk_daemon.cc
-      src/transport_impl/dpdk/dpdk_externs.cc
-      src/transport_impl/dpdk/dpdk_init.cc)
-    target_link_libraries(erpc_dpdk_daemon ${LIBRARIES})
-  endif()
-endif()
+#if(DPDK_NEEDED STREQUAL "true")
+#  if (NOT WIN32)
+#    # Build the eRPC DPDK management daemon for Linux only
+#    add_executable(erpc_dpdk_daemon
+#      src/transport_impl/dpdk/dpdk_daemon.cc
+#      src/transport_impl/dpdk/dpdk_externs.cc
+#      src/transport_impl/dpdk/dpdk_init.cc)
+#    target_link_libraries(erpc_dpdk_daemon ${LIBRARIES})
+#  endif()
+#endif()
 
 # Using link-time optimization sometimes requires building with sources instead
 # of liberpc. See the hello world example's Makefile for an example of
