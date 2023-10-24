@@ -400,6 +400,9 @@ class Rpc {
   /// Return the ID of this Rpc object
   inline uint8_t get_rpc_id() const { return rpc_id_; }
 
+  /// Return the tsc taken at each iteration of the ev loop
+  inline size_t get_ev_loop_tsc() const { return ev_loop_tsc_; }
+
   /// Return true iff the caller is running in a background thread
   inline bool in_background() const { return !in_dispatch(); }
 

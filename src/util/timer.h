@@ -84,9 +84,7 @@ static double to_msec(size_t cycles, double freq_ghz) {
 /// Convert cycles measured by rdtsc with frequence \p freq_ghz to usec
 double to_usec(size_t cycles, double freq_ghz);
 
-static size_t ms_to_cycles(double ms, double freq_ghz) {
-  return static_cast<size_t>(ms * 1000 * 1000 * freq_ghz);
-}
+size_t ms_to_cycles(double ms, double freq_ghz);
 
 static size_t us_to_cycles(double us, double freq_ghz) {
   return static_cast<size_t>(us * 1000 * freq_ghz);

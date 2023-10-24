@@ -13,4 +13,8 @@ double to_usec(size_t cycles, double freq_ghz) {
   return (cycles / (freq_ghz * 1000));
 }
 
+size_t ms_to_cycles(double ms, double freq_ghz) {
+  return static_cast<size_t>(ms * 1000 * 1000 * freq_ghz);
 }
+
+}  // namespace erpc
